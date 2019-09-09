@@ -1,185 +1,599 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
 
-		<title>PDP Kafka Training</title>
+    <title>PDP Kafka Training</title>
 
-		<link rel="stylesheet" href="css/reset.css">
-		<link rel="stylesheet" href="css/reveal.css">
-		<link rel="stylesheet" href="css/theme/serif.css">
+    <link rel="stylesheet" href="css/reset.css" />
+    <link rel="stylesheet" href="css/reveal.css" />
+    <link rel="stylesheet" href="css/theme/serif.css" />
 
-		<!-- Theme used for syntax highlighting of code -->
-		<link rel="stylesheet" href="lib/css/monokai.css">
+    <!-- Theme used for syntax highlighting of code -->
+    <link rel="stylesheet" href="lib/css/monokai.css" />
 
-		<!-- Printing and PDF exports -->
-		<script>
-			var link = document.createElement( 'link' );
-			link.rel = 'stylesheet';
-			link.type = 'text/css';
-			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
-			document.getElementsByTagName( 'head' )[0].appendChild( link );
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.type = "text/css";
+      link.href = window.location.search.match(/print-pdf/gi)
+        ? "css/print/pdf.css"
+        : "css/print/paper.css";
+      document.getElementsByTagName("head")[0].appendChild(link);
 		</script>
-	</head>
-	<body>
-		<div class="reveal">
-			<div class="slides">
-				<section>PDP Kafka Training</section>
-				<section>
-					<section>Agenda</section>
+		<style>
+				.container {
+					display: flex;
+				}
+				.col {
+					flex: 1;
+				}
+		</style>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section>PDP Kafka Training</section>
+        <section>
+          <section>Agenda</section>
+          <section>
+            <h2>Theory</h2>
+            <ul>
+              <li class="fragment">Kafka Basics</li>
+              <li class="fragment">Low Level Producer / Consumer</li>
+              <li class="fragment">Avro</li>
+              <li class="fragment">Streams</li>
+              <li class="fragment">Connect</li>
+            </ul>
+          </section>
+          <section>
+            <h2>Hands-On Exercise</h2>
+            <img data-src="assets/images/tutorials.jpeg" height="530" />
+          </section>
+          <section>
+            <h2>Hands-On Agenda</h2>
+            <ol>
+              <li class="fragment">Low Level Producer / Consumer</li>
+              <li class="fragment">Kafka Streams</li>
+            </ol>
+          </section>
+        </section>
+        <section>
+          <section>
+            <h2>Kafka Basics (1)</h2>
+            <p><b>Apache Kafka is a distributed streaming platform.</b></p>
+            <div class="fragment">
+              <h4>Streaming Platform</h4>
+              <ul>
+                <li>Publish and Subscribe to streams of records</li>
+                <li>Store Streams of Records (durable, fault tolerant)</li>
+                <li>Process Streams of Records <b>as they occur</b></li>
+              </ul>
+            </div>
+          </section>
+          <section>
+            <h2>Kafka Basics (2)</h2>
+            <ul>
+              <li class="fragment">Record = Key, Value, Timestamp</li>
+              <li class="fragment">Streams of Records are stored in Topics</li>
+              <li class="fragment">Kafka runs as a cluster of 1+ servers</li>
+            </ul>
+          </section>
+          <section>
+            <h2>Attaching to Kafka</h2>
+            <p>
+              <img data-src="assets/images/kafka-apis.png" height="350px" />
+            </p>
+            <ul>
+              <li class="fragment">Producers: Generate Events</li>
+              <li class="fragment">Consumers: Read Events</li>
+              <li class="fragment">Connectors: Attach External Systems</li>
+              <li class="fragment">
+                Streams: Use high level operations on events
+              </li>
+            </ul>
+          </section>
+          <section>
+            <h2>Topics and Logs</h2>
+            <div class="fragment">
+              <img data-src="assets/images/log_anatomy.png" height="250px" />
+            </div>
+            <div class="fragment">
+              <img data-src="assets/images/log_consumer.png" height="200px" />
+            </div>
+          </section>
+          <section>
+            <h2>Distribution</h2>
+            <ul>
+              <li class="fragment">Each Topic can be partitioned</li>
+              <li class="fragment">Partitioning = parallelism</li>
+              <li class="fragment">
+                Each Partition: 1 leader and 0+ followers
+              </li>
+              <li class="fragment">Leader: Handles the write + reads</li>
+              <li class="fragment">
+                Followers: passively replicate the leader
+              </li>
+              <li class="fragment">
+                If the leader fails, one of the followers become the new leader
+              </li>
+              <li class="fragment">
+                Each Server in a cluster is leader + follower for some
+                partitions
+              </li>
+            </ul>
+					</section>
 					<section>
-						<h2>Theory</h2>
+						<h2>Brokers</h2>
+						<p>
+							Handles Storage, Fail-Over, <br />
+							but knows nothing about producers or consumers!
+						</p>
+					</section>
+          <section>
+						<h2>Producers</h2>
 						<ul>
-							<li class="fragment">Kafka Basics</li>
-							<li class="fragment">Avro</li>
-							<li class="fragment">Low Level Producer / Consumer</li>
-							<li class="fragment">Streams</li>
-							<li class="fragment">KSQL</li>
-							<li class="fragment">Connect</li>
+							<li>Publish Record to Topic</li>
+							<li>Producer decides which partition</li>
+						<ul>
+          </section>
+          <section>
+						<h2>Consumers + Consumer Groups</h2>
+						<ul>
+							<li>Reads Records</li>
+							<li>Consumer is part of a consumer-group</li>
+							<li>Consumer in a group: consumer of 1-n partitions</li>
+							<li>Each Consumer Group => each message once</li>
+						<ul>
+          </section>
+          <section>
+						<h2>Consumer Groups</h2>
+						<div>
+							<img data-src="assets/images/consumer-groups.png" height="550px"/>
+						</div>
+          </section>
+          <section>
+						<h2>Guarantees</h2>
+						<ul>
+							<li>Messages sent by 1 producer to 1 topic are appended in send order</li>
+							<li>Consumers receive messages in the order (per partition)</li>
+							<li>Topic with replication factor N: N-1 server failures allowed</li>
+							<li>Exactly Once Delivery possible, at least once always guaranteed</li>
+						</ul>
+          </section>
+          <section>
+						<h2>Use Cases</h2>
+						<ul>
+							<li>Messaging</li>
+							<li>Log Aggregation (Metrics, Website Activity, ...)</li>
+							<li>Stream Processing</li>
+							<li>Event Sourcing</li>
+							<li>Commit Logs</li>
+						</ul>
+					</section>
+				</section>
+        <section>
+          <section>
+            <h2>Avro</h2>
+					</section>
+					<section>
+						<h2>Functionality</h2>
+						<ul>
+							<li class="fragment">Structured Data Format</li>
+							<li class="fragment">Schema based</li>
+							<li class="fragment">Compact and fast binary data format</li>
+							<li class="fragment">Code can be generated (but no must)</li>
 						</ul>
 					</section>
 					<section>
-						<h2>Hands-On Exercise</h2>
-						<img data-src="assets/images/tutorials.jpeg" height=530>
+						<h2>Schemas</h2>
+						<ul>
+							<li class="fragment">Avro Data always stored together with schema</li>
+							<li class="fragment">Avro Schema is defined in JSON</li>
+							<li class="fragment">Resolve mechanism between different versions of schemas</li>
+							<li class="fragment">Based on Field Names, not IDs</li>
+						</ul>
 					</section>
 					<section>
-						<h2>Hands-On Agenda</h2>
-						<ol>
-							<li class="fragment">Low Level Producer / Consumer (Players)</li>
-							<li class="fragment">Kafka Streams (Statistics + Dealer)</li>
-							<li class="fragment">KSQL (Improving our playing chances)</li>
-							<li class="fragment">Connect (Write a receipt CSV)</li>
-						</ol>
+						<h2>Supported Types</h2>
+						<div class="container">
+							<div class="col">
+								<p>Primitive:</p>
+								<ul>
+									<li>null</li>
+									<li>boolean</li>
+									<li>int</li>
+									<li>long</li>
+									<li>float</li>
+									<li>double</li>
+									<li>bytes</li>
+									<li>string</li>
+								</ul>
+							</div>
+							<div class="col">
+								<p>Complex:</p>
+								<ul>
+									<li>records</li>
+									<li>enums</li>
+									<li>arrays</li>
+									<li>maps</li>
+									<li>unions</li>
+									<li>fixed</li>
+								</ul>
+							</div>
 					</section>
-				</section>
-				<section>
 					<section>
-						<h2>Kafka Basics</h2>
+						<h2>Comptability of schemas</h2>
+						<table>
+							<thead>
+								<tr>
+									<th>Type</th>
+									<th>Changes allowed</th>
+									<th>Upgrade First</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>Backward</td>
+									<td>
+										<ul>
+											<li>Delete Fields</li>
+											<li>Add optional fields</li>
+										</ul>
+									</td>
+									<td>Consumers</td>
+								</tr>
+								<tr>
+									<td>Forward</td>
+									<td>
+										<ul>
+											<li>Add Fields</li>
+											<li>Delete optional fields</li>
+										</ul>
+									</td>
+									<td>Producers</td>
+								</tr>
+								<tr>
+									<td>Full</td>
+									<td>
+										<ul>
+											<li>Modify optional fields</li>
+										</ul>
+									</td>
+									<td>Any order</td>
+								</tr>
+								<tr>
+									<td>None</td>
+									<td>
+										<ul>
+											<li>All changes</li>
+										</ul>
+									</td>
+									<td>Depends</td>
+								</tr>
+							</tbody>
+						</table>
 					</section>
-					<section>
-						<h2>Very Short History</h2>
-					</section>
-					<section>
-						<h2>Features</h2>
-					</section>
-					<section>
-						<h2>The Good Parts</h2>
-					</section>
-					<section>
-						<h2>The Bad Parts</h2>
-					</section>
-					<section>
-						<h2>The Ugly Parts</h2>
-					</section>
-				</section>
-				<section>
-					<section>
-						<h2>Avro</h2>
-					</section>
-				</section>
-				<section>
-					<section>
+        </section>
+        <section>
+          <section>
 						<h2>Hands-On: Getting everything ready</h2>
+						<p><a href="https://github.com/titaniumcoder/kafka-introduction">https://github.com/titaniumcoder/kafka-introduction</a></p>
+						<ul>
+							<li>Java</li>
+							<li>Gradle</li>
+							<li>IDE</li>
+						</ul>
 					</section>
-				</section>
-				<section>
 					<section>
-						<h2>Low Level Producer / Consumer</h2>
+						<h2>Application Idea</h2>
+						<p>We build a <b>distributed</b>, <b>event-based</b> Signing Software.</p>
 					</section>
-				</section>
-				<section>
 					<section>
-						<h2>Hands-On: Players</h2>
+						<h2>Events</h2>
+						<p><code>ch.srgssr.pdp.kafka.training.events</code></p>
 					</section>
-				</section>
-				<section>
 					<section>
-						<h2>Streams</h2>
+						<h2>Topic TrainingSystemState</h2>
+						<ul>
+							<li>Info(Id, UUID, Description, Algorithm)</li>
+						</ul>
 					</section>
-				</section>
-				<section>
 					<section>
-						<h2>Hands-On: Dealer + Statistics</h2>
+						<h2>Topic TrainingMessage</h2>
+						<ul>
+							<li>SignRequest(UUID, Algorithm?, Content)</li>
+							<li>Signed(UUID, Id, Key?, Algorithm, Content, Signature)</li>
+							<li>RequestVerification(UUID, Algorithm, Key?, Content, Signature)</li>
+							<li>VerificationAnswer(UUID, Valid / Invalid)</li>
+						</ul>
 					</section>
-				</section>
-				<section>
 					<section>
-						<h2>KSQL</h2>
+						<h2>API (1)</h2>
+						<ul>
+							<li><code>GET /algorithms</code><br>List all registered algorithms in the system (from Info)</li>
+							<li><code>GET /systems</code><br>List all registered systems (Ids from Info)</li>
+							<li><code>POST /sign?algorithm Body: content</code><br>sign the request</li>
+							<li><code>POST /verify?algorithm&key Body: Content, Signature</code><br>verify the signature</li>
+						</ul>
 					</section>
-				</section>
-				<section>
 					<section>
-						<h2>Hands-On: Guessing the Computer Blackjack</h2>
+						<h2>API (2)</h2>
+						<ul>
+							<li><code>GET /stats</code><br>Statistics:
+								<ul style="font-size: smaller;">
+									<li>Number of algorithm</li>
+									<li>Most used algorithm in last hour, 24 hours, 10 minutes</li>
+									<li>Percentage of failed verifications</li>
+									<li>Ranking of failing algorithms and ids</li>
+								</ul>
+							</li>
+						</ul>
 					</section>
-				</section>
-				<section>
 					<section>
-						<h2>Connect</h2>
+						<h2>First exercise</h2>
+						<p>Just make sure the application compiles and can be started.</p>
 					</section>
-				</section>
-				<section>
+        </section>
+        <section>
+          <section>
+						<h2>Producer</h2>
+					</section>
 					<section>
-						<h2>Hands-On: Write the receipt</h2>
+						<h2>Characteristics</h2>
+						<ul>
+							<li class="fragment">Send directly to the leader of the correct partition</li>
+							<li class="fragment">Leader can be found via metadata request (but Java Client handles this)</li>
+							<li class="fragment">Correct Partition: Definition of Producer, Default Hash Of Key</li>
+							<li class="fragment">Asynchronous Send: Kafka Producer tries to batch multiple messages</li>
+						</ul>
+					</section> 
+					<section>
+						<h2>Important Configs</h2>
+						<ul>
+							<li><code>key.serializer / value.serializer</code>: How to serialize records</li>
+							<li><code>acks</code>: Number of acknowledges before request is complete: 0, 1, all</li>
+							<li><code>retries</code>: how many times to retry on failure</li>
+							<li><code>batch.size</code>: in bytes!</li>
+							<li><code>client.id</code>: for logging only</li>
+							<li><code>max.in.flight.requests.per.connection</code>: maximum number of unacknowledged requests</li>
+							<li><code>enable.idempotence</code>: allow exactly once</li>
+						</ul>
 					</section>
-				</section>
-
-				<section>
-						<h2>Pretty Code</h2>
-						<pre><code class="java" data-trim data-line-numbers="1,3-4">
-class Hello {
-  public static void main(String[] args) {
-    System.out.println("Hello World!");
-  }
-}
-						</code></pre>
-					</section>
-
-					<section data-markdown>
-							<script type="text/template">
-								## Markdown support
-		
-								Write content using inline or external Markdown.
-								Instructions and more info available in the [readme](https://github.com/hakimel/reveal.js#markdown).
-		
-								```
-								<section data-markdown>
-									## Markdown support
-		
-									Write content using inline or external Markdown.
-									Instructions and more info available in the [readme](https://github.com/hakimel/reveal.js#markdown).
-								</section>
-								```
-							</script>
+        </section>
+        <section>
+          <section>
+						<h2>Consumer</h2>
+          </section>
+					<section>
+							<h2>Characteristics</h2>
+							<ul>
+								<li class="fragment">Send Fetch Request to the leader</li>
+								<li class="fragment">Sends Wanted Offset! (Broker knows nothing about that)</li>
+								<li class="fragment">Receives a bunch of records</li>
+								<li class="fragment"><b>Java Client helps, but the definition of "Done" is a client job</b></li>
+							</ul>
+						</section> 
+						<section>
+							<h2>Important Configs (1)</h2>
+							<ul>
+								<li><code>key.serializer / value.serializer</code>: How to serialize records</li>
+								<li><code>group.id</code>: Consumer Group Name</li>
+								<li><code>auto.offset.reset</code>: Where to start with a new consumer group: earliest, latest, none</li>
+								<li><code>fetch.max.bytes</code>: how much data to fetch</li>
+								<li><code>max.poll.records</code>: how many records to fetch</li>
+								<li><code>max.poll.interval.ms</code>: max delay between polls</li>
+							</ul>
 						</section>
-			</div>
-		</div>
+						<section>
+							<h2>Important Configs (2)</h2>
+							<ul>
+								<li><code>enable.auto.commit</code>: whether the client should auto-commit the offset</li>
+								<li><code>auto.commit.interval.ms</code>: how often to auto-commit</li>
+								<li><code>client.id</code>: for logging purposes</li>
+							</ul>
+						</section>
+					</section>
+        <section>
+          <section>
+						<h2>Hands-On</h2>
+						<h4>Handle  all missing methods in the low-level service</h4>
+						<ul>
+								<li>Register / Leave</li>
+								<li>Encryption / Decryption</li>
+							</ul>
+						</section>
+        </section>
+        <section>
+          <section>
+            <h2>Streams</h2>
+          </section>
+          <section>
+						<h2>Functionality</h2>
+						<p>Kafka Streams is a client library for processing and analyzing data stored in Kafka.</p>
+						<ul>
+							<li class="fragment">Lightweight Client Library</li>
+							<li class="fragment">No External Dependencies</li>
+							<li class="fragment">Fault-Tolerant Local State</li>
+							<li class="fragment">Supports Exactly-Once Processing</li>
+							<li class="fragment">One-Record at a time processing</li>
+							<li class="fragment">Event-Time Based Windowing Operations</li>
+						</ul>
+          </section>
+          <section>
+						<h2>Stream</h2>
+						<ul>
+							<li>Unbounded, Continuously Updating Data Set</li>
+							<li>Ordered</li>
+							<li>Replayable</li>
+							<li>Fault-Tolerant</li>
+							<li>Immutable Data Records</li>
+						</ul>
+          </section>
+          <section>
+						<h2>Processor Topology</h2>
+						<img data-src="assets/images/streams-architecture-topology.jpg" height="550px">
+          </section>
+          <section>
+						<h2>Stream Processing Application</h2>
+						<ul>
+							<li>Any program using the Kafka Streams Library</li>
+							<li>One or more Processor Topologies</li>
+						</ul>
+          </section>
+          <section>
+						<h2>Time</h2>
+						<ul>
+							<li>Event Time</li>
+							<li>Processing Time</li>
+							<li>Ingestion Time</li>
+						</ul>
+          </section>
+          <section>
+						<h2>Aggregation</h2>
+						<div>
+							Takes one or more input streams / tables and combines them into one output record.
+						</div>
+          </section>
+          <section>
+						<h2>Windowing</h2>
+						<ul>
+							<li>Group Records that have the same key for stateful operations (aggregations, joins, ...)</li>
+							<li><b>Retention Period</b>: How long to wait for out-of-order / late-arriving data records</li>
+						</ul>
+          </section>
+          <section>
+						<h2>State</h2>
+						<div>
+							Kafka Streams provides state stores, which can be used by the application to store and query data.
+						</div>
+          </section>
+          <section>
+						<h2>Out-of-Order Handling</h2>
+						<dl>
+							<dt>Stream-Stream Joins</dt>
+							<dd>Out-of-Order Records handled, but result with possible unnecessary records</dd>
 
-		<script src="js/reveal.js"></script>
+							<dt>Stream-Table Joins</dt>
+							<dd>Out-of-Order Records not handled, unpredictable results</dd>
 
-		<script>
-			// More info about config & dependencies:
-			// - https://github.com/hakimel/reveal.js#configuration
-			// - https://github.com/hakimel/reveal.js#dependencies
-			Reveal.initialize({
-				controls: true,
-				progress: true,
-				center: true,
+							<dt>Table-Table Joins</dt>
+							<dd>Out-of-Order Records not handled, eventually consistent (changelog stream)</dd>
+						</dl>
+					</section>
+					<section>
+						<h2>Sample Architecture</h2>
+						<img data-src="assets/images/streams-architecture-overview.jpg" height="550px" />
+					</section>
+					<section>
+						<h2>Streams DSL</h2>
+						<ul>
+							<li>KStream: Record Stream -- insert only</li>
+							<li>KTable: Changelog Stream -- upsert</li>
+							<li>GlobalKTable: Changelog Stream -- but over all instances</li>
+						</ul>
+					</section>
+					<section>
+						<h2>Stateless Operations</h2>
+						<ul>
+							<li>Branch: Split a stream according to some criteria</li>
+							<li>Filter / Inverse Filter: Evaluate Boolean Function</li>
+							<li>FlatMap: 1 Record &rarr; 0 to N Records</li>
+							<li>GroupByKey: KStream &rarr; KGroupedStream</li>
+							<li>GroupBy: Group by <b>new</b> key</li>
+							<li>Map: Just calculate new Key,Value Pair</li>
+							<li>SelectKey: Calculate new key for records</li>
+							<li>Merge: Merge together to streams of the same type</li>
+							<li>Peek (execute side-effect operation on each record)</li>
+						</ul>
+					</section>
+					<section>
+						<h2>Stateless Terminal Operations</h2>
+						<ul>
+							<li>Foreach: Ends processing</li>
+							<li>Print: Prints to System Out</li>
+						</ul>
+					</section>
+					<section>
+						<h2>Stateful Operations</h2>
+						<img data-src="assets/images/streams-stateful_operations.png" height="550px">
+					</section>
+        </section>
+        <section>
+          <section>
+						<h2>Hands-On: Statistics</h2>
+						<ul>
+							<li>How many Encryption Requests</li>
+							<li>How many Requests were answered (no of responders)</li>
+							<li>How many Decryption Requests</li>
+							<li>How many Decryptions were answered</li>
+							<li>Who did most encryptions / decryptions</li>
+							<li>How many failed decryptions</li>
+							<li>Who is "badest" decrypter</li>
+							<li>???</li>
+						</ul>
+          </section>
+        </section>
+        <section>
+          <section>
+            <h2>Connect</h2>
+					</section>
+					<section>
+						<h2>Core Conepts</h2>
+						<ul>
+							<li><b>Connectors: SourceConnectors (In)/ SinkConnectors (Out)</b><br>
+							Describe the data to be copied and generate tasks to do the copying</li>
+							<li><b>Task: SourceTask / SinkTask</b><br>Copy Data from or to Kafka</li>
+							<li><b>DynamicConnector</b>: A Connector is responsible for monitoring
+							the external system for change and must reconfigure itself accordingly</li>
+						</ul>
+					</section>
+					<section>
+						<h2>Task Architecture</h2>
+						<img data-src="assets/images/data-model-simple.png" height="550px">
+					</section>
+					<section>
+						<h2>Converters</h2>
+						<img data-src="assets/images/converter-basics.png" height="550px">
+					</section>
+					<section>
+						<h2>Connector Hub</h2>
+						<a href="https://www.confluent.io/hub/" target="_blank">Confluent Hub</a>
+					</section>
+        </section>
+      </div>
+    </div>
 
-				hash: true,
+    <script src="js/reveal.js"></script>
 
-				pdfSeparateFragments: false,
+    <script>
+      // More info about config & dependencies:
+      // - https://github.com/hakimel/reveal.js#configuration
+      // - https://github.com/hakimel/reveal.js#dependencies
+      Reveal.initialize({
+        controls: true,
+        progress: true,
+        center: true,
 
-				transition: 'slide', // none/fade/slide/convex/concave/zoom
+        hash: true,
 
-				dependencies: [
-					{ src: 'plugin/markdown/marked.js' },
-					{ src: 'plugin/markdown/markdown.js' },
-					{ src: 'plugin/notes/notes.js', async: true },
-					{ src: 'plugin/zoom-js/zoom.js', async: true },
-					{ src: 'plugin/highlight/highlight.js', async: true }
-				]
-			});
-		</script>
-	</body>
+        pdfSeparateFragments: false,
+
+        transition: "slide", // none/fade/slide/convex/concave/zoom
+
+        dependencies: [
+          { src: "plugin/markdown/marked.js" },
+          { src: "plugin/markdown/markdown.js" },
+          { src: "plugin/notes/notes.js", async: true },
+          { src: "plugin/zoom-js/zoom.js", async: true },
+          { src: "plugin/highlight/highlight.js", async: true }
+        ]
+      });
+    </script>
+  </body>
 </html>
