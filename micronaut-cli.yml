@@ -1,0 +1,5 @@
+profile: kafka
+defaultPackage: kafka.training
+---
+testFramework: junit
+sourceLanguage: java
