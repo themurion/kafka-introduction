@@ -1,0 +1,33 @@
+{
+  "type": "record",
+  "name": "Info",
+  "namespace": "ch.srgssr.pdp.kafka.training.events",
+  "fields": [
+    {
+      "name": "id",
+      "type": "string"
+    },
+    {
+      "name": "uuid",
+      "type": "string"
+    },
+    {
+      "name": "description",
+      "type": [
+        "null",
+        "string"
+      ],
+      "defaultValue": null
+    },
+    {
+      "name": "algorithms",
+      "type": {
+        "type": "array",
+        "items": {
+          "name": "Algorithm",
+          "type": "string"
+        }
+      }
+    }
+  ]
+}

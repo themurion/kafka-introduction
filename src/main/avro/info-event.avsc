@@ -1,0 +1,62 @@
+{
+  "type": "record",
+  "name": "Signature",
+  "namespace": "ch.srgssr.pdp.kafka.training.events",
+  "fields": [
+    {
+      "name": "uuid",
+      "type": "string"
+    },
+    {
+      "name": "id",
+      "type": [
+        "null",
+        "string"
+      ],
+      "defaultValue": null
+    },
+    {
+      "name": "algorithm",
+      "type": [
+        "null",
+        "string"
+      ],
+      "defaultValue": null
+    },
+    {
+      "name": "content",
+      "type": "bytes"
+    },
+    {
+      "name": "signature",
+      "type": [
+        "null",
+        "bytes"
+      ],
+      "defaultValue": null
+    },
+    {
+      "name": "key",
+      "type": [
+        "null",
+        "string"
+      ],
+      "defaultValue": null
+    },
+    {
+      "name": "event",
+      "type": {
+        "type": "enum",
+        "name": "EventType",
+        "namespace": "ch.srgssr.pdp.kafka.training.events",
+        "symbols": [
+          "SIGN",
+          "VERIFY",
+          "SIGNED",
+          "VERIFIED",
+          "VERIFICATION_FAILED"
+        ]
+      }
+    }
+  ]
+}
