@@ -301,16 +301,19 @@
 					<section>
 						<h2>Topic TrainingSystemState</h2>
 						<ul>
-							<li>Info(Id, UUID, Description, Algorithm)</li>
+							<li>Info(Id, UUID, Description, Algorithms)</li>
 						</ul>
 					</section>
 					<section>
 						<h2>Topic TrainingMessage</h2>
-						<ul>
-							<li>SignRequest(UUID, Algorithm?, Content)</li>
-							<li>Signed(UUID, Id, Key?, Algorithm, Content, Signature)</li>
-							<li>RequestVerification(UUID, Algorithm, Key?, Content, Signature)</li>
-							<li>VerificationAnswer(UUID, Valid / Invalid)</li>
+							<div>Signature(uuid, id?, algorithm?, content, signature?, key?, event)</div>
+							<ul>
+								<li>SIGN</li>
+								<li>SIGNED</li>
+								<li>VERIFY</li>
+								<li>VERIFIED</li>
+								<li>VERIFICATION_FAILED</li>
+							</ul>
 						</ul>
 					</section>
 					<section>
