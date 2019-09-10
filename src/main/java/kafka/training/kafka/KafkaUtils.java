@@ -1,5 +1,8 @@
 package kafka.training.kafka;
 
+import io.confluent.kafka.serializers.KafkaAvroDeserializer;
+import io.confluent.kafka.serializers.KafkaAvroSerializer;
+import kafka.training.config.ApplicationConfig;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -7,55 +10,39 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
-import java.io.IOException;
-import java.io.InputStream;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.Collections;
-import java.util.Map;
 import java.util.Properties;
 
+@Singleton
 public class KafkaUtils {
     public final static String TRAINING_SYSTEM = "TrainingSystemState";
     public final static String TRAINING_MESSAGE = "TrainingMessage";
 
-    public static Properties loadProperties() throws IOException {
+    @Inject
+    ApplicationConfig config;
+
+    public <T> KafkaProducer<String, T> createAvroProducer(String clientId) {
         Properties p = new Properties();
-        try (InputStream is = KafkaUtils.class.getClassLoader().getResourceAsStream("kafka.properties")) {
-            p.load(is);
-        }
-        return p;
-    }
-
-    public static <T, S> KafkaProducer<String, T> createProducer(Class<S> valueSerializer) throws IOException {
-        return createProducer(valueSerializer, false);
-    }
-
-    public static <T, S> KafkaProducer<String, T> createProducer(Class<S> valueSerializer, boolean sync) throws IOException {
-        return createProducer(valueSerializer, sync, Collections.emptyMap());
-    }
-
-    public static <T, S> KafkaProducer<String, T> createProducer(Class<S> valueSerializer, boolean sync, Map<Object, Object> additionalProperties) throws IOException {
-        Properties p = KafkaUtils.loadProperties();
+        p.putAll(config.getKafkaProperties());
         p.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getCanonicalName());
-        p.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, valueSerializer.getCanonicalName());
-        if (sync) {
-            p.put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, 1);
-        }
-        p.putAll(additionalProperties);
+        p.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class.getCanonicalName());
+        p.put(ConsumerConfig.CLIENT_ID_CONFIG, clientId);
+        // p.put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, 1);
+        p.putAll(Collections.emptyMap());
         return new KafkaProducer<>(p);
     }
 
-    public static <T, S> KafkaConsumer<String, T> createConsumer(Class<S> valueDeserializer, String groupId, boolean fromBeginning) throws IOException {
-        return createConsumer(valueDeserializer, groupId, fromBeginning, Collections.emptyMap());
-    }
-
-    public static <T, S> KafkaConsumer<String, T> createConsumer(Class<S> valueDeserializer, String groupId, boolean fromBeginning, Map<Object, Object> additionalProperties) throws IOException {
-        Properties p = KafkaUtils.loadProperties();
+    public <T> KafkaConsumer<String, T> createAvroConsumer(String groupId, String clientId) {
+        Properties p = new Properties();
+        p.putAll(config.getKafkaProperties());
         p.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getCanonicalName());
-        p.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, valueDeserializer.getCanonicalName());
+        p.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class.getCanonicalName());
         p.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-        p.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, fromBeginning ? "earliest" : "latest"); // start at the beginning for the demo, else it would read nothing...
-        p.putAll(additionalProperties);
+        p.put(ConsumerConfig.CLIENT_ID_CONFIG, clientId);
+        p.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest"); // start at the beginning for the demo, else it would read nothing...
+        p.putAll(Collections.emptyMap());
         return new KafkaConsumer<>(p);
     }
-
 }

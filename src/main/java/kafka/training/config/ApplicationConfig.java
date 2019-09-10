@@ -5,8 +5,9 @@ import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 // FIXME this is not working correctly
 @ConfigurationProperties("sign.app")
@@ -14,10 +15,15 @@ import java.util.List;
 public class ApplicationConfig {
 
     @NotNull
-    private String id = "rico-id";
+    private String id;
 
-    private String description = "rico-description";
+    private String description;
 
     @NotEmpty
-    private List<String> algorithms = Arrays.asList("cesar", "md5");
+    private List<String> algorithms;
+
+    @NotEmpty
+    private Map<String, Object> kafkaProperties;
+
+    private String applicationUuid = UUID.randomUUID().toString();
 }

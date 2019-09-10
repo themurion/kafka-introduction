@@ -2,63 +2,77 @@ package kafka.training.kafka;
 
 import ch.srgssr.pdp.kafka.training.events.Info;
 import ch.srgssr.pdp.kafka.training.events.Signature;
-import io.confluent.kafka.serializers.KafkaAvroDeserializer;
-import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import io.micronaut.context.event.ApplicationEventListener;
-import io.micronaut.discovery.event.ServiceStartedEvent;
+import io.micronaut.discovery.event.ServiceShutdownEvent;
 import kafka.training.config.ApplicationConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.serialization.StringSerializer;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Collections;
-import java.util.UUID;
 
 @Singleton
-public class ProducersAndConsumers implements ApplicationEventListener<ServiceStartedEvent> {
-
+public class ProducersAndConsumers implements ApplicationEventListener<ServiceShutdownEvent>  {
     @Inject
     ApplicationConfig config;
-    private KafkaProducer<String, Info> trainingMessageProducer;
-    private KafkaProducer<String, Signature> trainingSystemProducer;
 
-    private KafkaConsumer<String, Info> trainingMessageConsumer;
-    private KafkaConsumer<String, Signature> trainingSystemConsumer;
+    @Inject
+    KafkaUtils kafkaUtils;
 
-    public void informAboutSystem() {
-        // FIXME publish Info message
-        var info = Info.newBuilder()
-                .setAlgorithms(config.getAlgorithms())
-                .setId(config.getId())
-                .setUuid(UUID.randomUUID().toString()) // TODO make this consistent!
-                .setDescription(config.getDescription())
-                .build();
+    private KafkaProducer<String, Signature> trainingMessageProducer;
+    private KafkaProducer<String, Info> trainingSystemProducer;
+
+    private KafkaConsumer<String, Signature> trainingMessageConsumer;
+    private KafkaConsumer<String, Info> trainingSystemConsumer;
+
+    public void publishMessage(Info info) {
+        // TODO implement this
     }
 
-    @Override
-    public void onApplicationEvent(ServiceStartedEvent event) {
+    public void publishMessage(Signature signature) {
+        // TODO implement this
+    }
+
+    @PostConstruct
+    public void setup() {
         try {
-            trainingMessageProducer = KafkaUtils.createProducer(KafkaAvroSerializer.class);
-            trainingSystemProducer = KafkaUtils.createProducer(KafkaAvroSerializer.class);
+            trainingMessageProducer = kafkaUtils.createAvroProducer(config.getApplicationUuid());
+            trainingSystemProducer = kafkaUtils.createAvroProducer(config.getApplicationUuid());
 
-            trainingMessageConsumer = KafkaUtils.createConsumer(KafkaAvroDeserializer.class, config.getId(), true);
-            trainingSystemConsumer = KafkaUtils.createConsumer(KafkaAvroDeserializer.class, config.getId(), true);
+            trainingMessageConsumer = kafkaUtils.createAvroConsumer(config.getId(), config.getApplicationUuid());
+            trainingSystemConsumer = kafkaUtils.createAvroConsumer(config.getId(), config.getApplicationUuid());
 
-            trainingMessageConsumer.subscribe(Collections.singleton("TrainingSystemState"));
-            trainingSystemConsumer.subscribe(Collections.singleton("TrainingMessage"));
+            trainingMessageConsumer.subscribe(Collections.singleton(KafkaUtils.TRAINING_SYSTEM));
+            trainingSystemConsumer.subscribe(Collections.singleton(KafkaUtils.TRAINING_MESSAGE));
 
             startEndlessLoop();
         } catch (Exception e) {
             System.exit(2);
         }
 
-        // TODO shut down if loop is not running
+        // TODO shut down if loop is not starting up
     }
 
     private void startEndlessLoop() {
         // TODO poll the topics!
     }
+
+    @Override
+    public void onApplicationEvent(ServiceShutdownEvent event) {
+        try {
+            trainingMessageConsumer.unsubscribe();
+            trainingSystemConsumer.unsubscribe();
+
+            trainingMessageConsumer.close();
+            trainingSystemConsumer.close();
+
+            trainingMessageProducer.close();
+            trainingSystemProducer.close();
+        } catch (Exception e) {
+            System.exit(2);
+        }
+    }
+
 }

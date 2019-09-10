@@ -20,6 +20,9 @@ public class KafkaSigningService {
     @Inject
     private List<Algorithm> algorithms;
 
+    @Inject
+    ProducersAndConsumers producers;
+
     private Map<String, CountDownLatch> queues = new HashMap<>();
     private Map<String, Signature> responses = new HashMap<>();
 
@@ -32,6 +35,8 @@ public class KafkaSigningService {
                 .setEvent(EventType.SIGN)
                 .setContent(content)
                 .build();
+
+        producers.publishMessage(signatureRequest);
 
         // FIXME publish message
 
