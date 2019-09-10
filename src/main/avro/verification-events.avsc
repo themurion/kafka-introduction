@@ -5,7 +5,11 @@
   "fields": [
     {
       "name": "id",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ],
+      "defaultValue": null
     },
     {
       "name": "uuid",

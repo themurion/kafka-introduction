@@ -1,4 +1,4 @@
-package kafka.training.algorithms;
+package kafka.training.stats;
 
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
@@ -6,17 +6,15 @@ import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Produces;
 
 import javax.inject.Inject;
-import java.util.List;
 
-@Controller("/algorithms")
-public class AlgorithmController {
-
+@Controller("/stats")
+public class StatsController {
     @Inject
-    AlgorithmService service;
+    StatsService service;
 
-    @Get
+    @Get("/")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<String> algorithms() {
-        return service.getAlgorithms();
+    public Statistics statistics() {
+        return service.statistics();
     }
 }

@@ -11,6 +11,7 @@ buildscript {
 plugins {
     id "net.ltgt.apt-eclipse" version "0.21"
     id "com.github.johnrengelman.shadow" version "5.0.0"
+    id "com.gorylenko.gradle-git-properties" version "2.0.0"
     id "application"
 }
 
@@ -26,7 +27,7 @@ repositories {
 
 configurations {
     // for dependencies that are needed for development only
-    developmentOnly 
+    developmentOnly
 }
 
 avro {
@@ -38,8 +39,11 @@ avro {
 }
 dependencies {
     annotationProcessor platform("io.micronaut:micronaut-bom:$micronautVersion")
+    compileOnly 'org.projectlombok:lombok:1.18.8'
+    annotationProcessor 'org.projectlombok:lombok:1.18.8'
     annotationProcessor "io.micronaut:micronaut-inject-java"
     annotationProcessor "io.micronaut:micronaut-validation"
+
     implementation platform("io.micronaut:micronaut-bom:$micronautVersion")
     implementation "io.micronaut:micronaut-inject"
     implementation "io.micronaut:micronaut-validation"
@@ -47,7 +51,10 @@ dependencies {
     implementation "io.micronaut:micronaut-http-server-netty"
     implementation "io.micronaut:micronaut-http-client"
     implementation "io.micronaut.configuration:micronaut-kafka"
+    implementation "io.micronaut:micronaut-management"
+
     runtimeOnly "ch.qos.logback:logback-classic:1.2.3"
+
     testAnnotationProcessor platform("io.micronaut:micronaut-bom:$micronautVersion")
     testAnnotationProcessor "io.micronaut:micronaut-inject-java"
     testImplementation platform("io.micronaut:micronaut-bom:$micronautVersion")
@@ -55,17 +62,23 @@ dependencies {
     testImplementation "io.micronaut.test:micronaut-test-junit5"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
 
-    compile 'org.apache.avro:avro:1.9.0'
+    implementation 'org.apache.avro:avro:1.9.0'
+
+    developmentOnly "io.micronaut:micronaut-runtime-osx"
+    developmentOnly "net.java.dev.jna:jna"
+    developmentOnly "io.methvin:directory-watcher"
 }
 
+run.classpath += configurations.developmentOnly
 test.classpath += configurations.developmentOnly
 
 mainClassName = "kafka.training.Application"
+
 // use JUnit 5 platform
 test {
     useJUnitPlatform()
 }
-tasks.withType(JavaCompile){
+tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
     options.compilerArgs.add('-parameters')
 }
