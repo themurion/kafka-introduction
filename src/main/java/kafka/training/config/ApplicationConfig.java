@@ -7,6 +7,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.UUID;
 
 // FIXME this is not working correctly
@@ -23,7 +24,7 @@ public class ApplicationConfig {
     private List<String> algorithms;
 
     @NotEmpty
-    private Map<String, Object> kafkaProperties;
+    private Properties kafka;
 
     private String applicationUuid = UUID.randomUUID().toString();
 }

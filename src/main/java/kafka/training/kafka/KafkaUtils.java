@@ -25,7 +25,7 @@ public class KafkaUtils {
 
     public <T> KafkaProducer<String, T> createAvroProducer(String clientId) {
         Properties p = new Properties();
-        p.putAll(config.getKafkaProperties());
+        p.putAll(config.getKafka());
         p.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getCanonicalName());
         p.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class.getCanonicalName());
         p.put(ConsumerConfig.CLIENT_ID_CONFIG, clientId);
@@ -36,7 +36,7 @@ public class KafkaUtils {
 
     public <T> KafkaConsumer<String, T> createAvroConsumer(String groupId, String clientId) {
         Properties p = new Properties();
-        p.putAll(config.getKafkaProperties());
+        p.putAll(config.getKafka());
         p.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getCanonicalName());
         p.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class.getCanonicalName());
         p.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);

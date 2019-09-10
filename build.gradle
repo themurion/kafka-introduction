@@ -73,15 +73,7 @@ dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter-api"
     testImplementation "io.micronaut.test:micronaut-test-junit5"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
-
-    // TODO fix this
-    developmentOnly "io.micronaut:micronaut-runtime-osx:$micronautVersion"
-    developmentOnly "net.java.dev.jna:jna:5.4.0"
-    developmentOnly "io.methvin:directory-watcher:0.9.6"
 }
-
-run.classpath += configurations.developmentOnly
-test.classpath += configurations.developmentOnly
 
 mainClassName = "kafka.training.Application"
 
