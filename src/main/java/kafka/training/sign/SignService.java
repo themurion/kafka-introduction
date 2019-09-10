@@ -1,5 +1,6 @@
 package kafka.training.sign;
 
+import ch.srgssr.pdp.kafka.training.events.Signature;
 import io.netty.buffer.ByteBuf;
 import kafka.training.kafka.KafkaSigningService;
 
@@ -14,8 +15,8 @@ public class SignService {
     KafkaSigningService kafkaSigningService;
 
     public SignedContent sign(SignedContent content) {
-        var c = Base64.getDecoder().decode(content.getContent());
-        var reqUuid = kafkaSigningService.publishSignRequest(content.getAlgorithm(), ByteBuffer.wrap(c));
+        byte[] c = Base64.getDecoder().decode(content.getContent());
+        Signature reqUuid = kafkaSigningService.publishSignRequest(content.getAlgorithm(), ByteBuffer.wrap(c));
 
         return new SignedContent(
                 reqUuid.getId(),
@@ -35,7 +36,7 @@ public class SignService {
     }
 
     public boolean verify(SignedContent content) {
-        var result = kafkaSigningService.verifySignatureRequest(
+        Signature result = kafkaSigningService.verifySignatureRequest(
                 content.getAlgorithm(),
                 content.getKey(),
                 base64ToByteBuffer(content.getSignature()),

@@ -19,7 +19,7 @@ public class ApplicationInfoNotifier {
 
     @Scheduled(fixedDelay = "1m")
     public void informAboutSystem() {
-        var info = Info.newBuilder()
+        Info info = Info.newBuilder()
                 .setAlgorithms(config.getAlgorithms())
                 .setId(config.getId())
                 .setUuid(UUID.randomUUID().toString()) // TODO make this consistent!

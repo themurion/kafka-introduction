@@ -8,10 +8,7 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -27,9 +24,9 @@ public class KafkaSigningService {
     private Map<String, Signature> responses = new HashMap<>();
 
     public Signature publishSignRequest(String algorithm, ByteBuffer content) {
-        var uuid = UUID.randomUUID();
+        UUID uuid = UUID.randomUUID();
 
-        var signatureRequest = Signature.newBuilder()
+        Signature signatureRequest = Signature.newBuilder()
                 .setUuid(uuid.toString())
                 .setAlgorithm(algorithm)
                 .setEvent(EventType.SIGN)
@@ -59,7 +56,7 @@ public class KafkaSigningService {
     }
 
     public void publishSignedMessage(UUID uuid, String id, String algorithm, @Nullable String key, ByteBuffer signature, ByteBuffer content) {
-        var signatureResponse = Signature.newBuilder()
+        Signature signatureResponse = Signature.newBuilder()
                 .setUuid(uuid.toString())
                 .setId(id)
                 .setAlgorithm(algorithm)
@@ -73,27 +70,27 @@ public class KafkaSigningService {
     }
 
     public void listenToSignatures(Signature signature) {
-        var algorithm = signature.getAlgorithm();
-        var algFound = (algorithms.stream().filter(v -> v.name().equals(algorithm)).findAny());
+        String algorithm = signature.getAlgorithm();
+        Optional<Algorithm> algFound = (algorithms.stream().filter(v -> v.name().equals(algorithm)).findAny());
         switch (signature.getEvent()) {
             case VERIFICATION_FAILED:
             case VERIFIED:
             case SIGNED:
                 if (queues.containsKey(signature.getUuid())) {
                     responses.put(signature.getUuid(), signature);
-                    var cl = queues.remove(signature.getUuid());
+                    CountDownLatch cl = queues.remove(signature.getUuid());
                     cl.countDown();
                 }
                 break;
             case SIGN:
                 algFound.ifPresent(alg -> {
-                    var result = alg.sign(signature.getContent().array());
+                    byte[] result = alg.sign(signature.getContent().array());
                     publishSignedMessage(UUID.fromString(signature.getUuid()), null, alg.name(), alg.key(), ByteBuffer.wrap(result), signature.getContent());
                 });
                 break;
             case VERIFY:
                 algFound.ifPresent(alg -> {
-                    var result = alg.verify(signature.getContent().array(), signature.getSignature().array());
+                    boolean result = alg.verify(signature.getContent().array(), signature.getSignature().array());
                     publishVerificationResult(UUID.fromString(signature.getUuid()), result);
                 });
                 break;
@@ -102,8 +99,8 @@ public class KafkaSigningService {
     }
 
     public Signature verifySignatureRequest(String algorithm, @Nullable String key, ByteBuffer signature, ByteBuffer content) {
-        var uuid = UUID.randomUUID();
-        var signatureRequest = Signature.newBuilder()
+        UUID uuid = UUID.randomUUID();
+        Signature signatureRequest = Signature.newBuilder()
                 .setUuid(uuid.toString())
                 .setAlgorithm(algorithm)
                 .setContent(content)
@@ -117,7 +114,7 @@ public class KafkaSigningService {
     }
 
     public void publishVerificationResult(UUID uuid, boolean verified) {
-        var signatureRequest = Signature.newBuilder()
+        Signature signatureRequest = Signature.newBuilder()
                 .setUuid(uuid.toString())
                 .setEvent(verified ? EventType.VERIFIED : EventType.VERIFICATION_FAILED)
                 .build();
