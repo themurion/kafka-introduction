@@ -18,6 +18,10 @@ public class SignService {
         byte[] c = Base64.getDecoder().decode(content.getContent());
         Signature reqUuid = kafkaSigningService.publishSignRequest(content.getAlgorithm(), ByteBuffer.wrap(c));
 
+        if (reqUuid == null) {
+            return null;
+        }
+
         return new SignedContent(
                 reqUuid.getId(),
                 reqUuid.getAlgorithm(),

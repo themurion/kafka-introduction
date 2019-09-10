@@ -3,6 +3,7 @@ package kafka.training.kafka;
 import ch.srgssr.pdp.kafka.training.events.EventType;
 import ch.srgssr.pdp.kafka.training.events.Signature;
 import kafka.training.algorithms.Algorithm;
+import kafka.training.config.ApplicationConfig;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -20,6 +21,9 @@ public class KafkaSigningService {
     @Inject
     ProducersAndConsumers producers;
 
+    @Inject
+    ApplicationConfig config;
+
     private Map<String, CountDownLatch> queues = new HashMap<>();
     private Map<String, Signature> responses = new HashMap<>();
 
@@ -27,6 +31,7 @@ public class KafkaSigningService {
         UUID uuid = UUID.randomUUID();
 
         Signature signatureRequest = Signature.newBuilder()
+                .setId(config.getId())
                 .setUuid(uuid.toString())
                 .setAlgorithm(algorithm)
                 .setEvent(EventType.SIGN)

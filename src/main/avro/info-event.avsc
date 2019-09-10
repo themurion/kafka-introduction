@@ -13,7 +13,7 @@
         "null",
         "string"
       ],
-      "defaultValue": null
+      "default": null
     },
     {
       "name": "algorithm",
@@ -21,7 +21,7 @@
         "null",
         "string"
       ],
-      "defaultValue": null
+      "default": null
     },
     {
       "name": "content",
@@ -33,7 +33,7 @@
         "null",
         "bytes"
       ],
-      "defaultValue": null
+      "default": null
     },
     {
       "name": "key",
@@ -41,7 +41,7 @@
         "null",
         "string"
       ],
-      "defaultValue": null
+      "default": null
     },
     {
       "name": "event",
