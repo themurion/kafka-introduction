@@ -26,6 +26,6 @@ public class ApplicationInfoNotifier {
                 .setDescription(config.getDescription())
                 .build();
 
-        producers.publishMessage(info);
+        producers.publishMessage(info.getId() + "/" + info.getUuid(), info);
     }
 }

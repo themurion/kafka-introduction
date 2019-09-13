@@ -1,7 +1,6 @@
 package kafka.training.sign;
 
 import ch.srgssr.pdp.kafka.training.events.Signature;
-import io.netty.buffer.ByteBuf;
 import kafka.training.kafka.KafkaSigningService;
 
 import javax.inject.Inject;

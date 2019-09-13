@@ -2,18 +2,27 @@ package kafka.training.kafka;
 
 import ch.srgssr.pdp.kafka.training.events.EventType;
 import ch.srgssr.pdp.kafka.training.events.Signature;
+import io.micronaut.configuration.kafka.annotation.KafkaListener;
+import io.micronaut.configuration.kafka.annotation.OffsetReset;
+import io.micronaut.configuration.kafka.annotation.OffsetStrategy;
+import io.micronaut.configuration.kafka.annotation.Topic;
 import kafka.training.algorithms.Algorithm;
 import kafka.training.config.ApplicationConfig;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-@Singleton
+@KafkaListener(
+        groupId = "tr-rico",
+        clientId = "tr-rico-2",
+        offsetReset = OffsetReset.EARLIEST,
+        offsetStrategy = OffsetStrategy.ASYNC,
+        threads = 3
+)
 public class KafkaSigningService {
     @Inject
     private List<Algorithm> algorithms;
@@ -38,9 +47,7 @@ public class KafkaSigningService {
                 .setContent(content)
                 .build();
 
-        producers.publishMessage(signatureRequest);
-
-        // FIXME publish message
+        producers.publishMessage(signatureRequest.getId() + "/" + signatureRequest.getUuid(), signatureRequest);
 
         return awaitAnswer(uuid);
     }
@@ -74,6 +81,7 @@ public class KafkaSigningService {
         // FIXME publish the signature
     }
 
+    @Topic(KafkaUtils.TRAINING_MESSAGE)
     public void listenToSignatures(Signature signature) {
         String algorithm = signature.getAlgorithm();
         Optional<Algorithm> algFound = (algorithms.stream().filter(v -> v.name().equals(algorithm)).findAny());
